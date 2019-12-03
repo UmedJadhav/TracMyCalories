@@ -45,6 +45,18 @@ const ItemCtrl = (function(){
             return found;
         },
 
+        deleteItem: function(id){
+            ids = data.items.map((item)=>{
+                return item.id;
+            });
+            const index = ids.indexOf(id);
+            data.items.splice(index,1);
+        },
+
+        clearAllItems: function(){
+            data.items = [];
+        },
+
         addItem: function(name,calories){
             let id= 0; 
             if(data.items.length > 0){
@@ -91,7 +103,8 @@ const UICtrl = (function(){
         updateBtn: '.update-btn',
         deleteBtn: '.del-btn',
         backBtn: '.back-btn' ,
-        listItems:  '#item-list li'
+        listItems:  '#item-list li',
+        clearBtn: '.clear-btn'
     };
 
     return {
@@ -110,13 +123,21 @@ const UICtrl = (function(){
             UICtrl.showEditState();
         },
 
+        removeItems: function(){
+            let listItems = document.querySelectorAll(UISelectors.listItems);
+            listItems = Array.from(listItems);
+            listItems.forEach((listItem)=>{
+                listItem.remove();
+            });
+        },
+
         clearEditState: function(){
            document.querySelector(UISelectors.addBtn).style.display = 'inline'; 
            document.querySelector(UISelectors.deleteBtn).style.display = 'none';
            document.querySelector(UISelectors.backBtn).style.display = 'none';
            document.querySelector(UISelectors.updateBtn).style.display = 'none';
            UICtrl.clearInput();
-       },
+       }, 
         
         showEditState: function(){
             document.querySelector(UISelectors.addBtn).style.display = 'none'; 
@@ -165,6 +186,12 @@ const UICtrl = (function(){
             });
         },
 
+        deleteListItem: function(id){
+            const itemId = `#item-${id}`;
+            const item = document.querySelector(itemId);
+            item.remove();
+        },
+
         showTotalCalories: function(totalCalories){
             document.querySelector(UISelectors.totalCalories).textContent = totalCalories;
         },
@@ -195,7 +222,7 @@ const App = (function(ItemCtrl,UICtrl){
     const loadEventListeners = function(){
         const UISelectors = UICtrl.getSelectors();
         document.querySelector(UISelectors.addBtn).addEventListener('click',itemAddSubmit);
-      document.addEventListener('keypress',(e)=>{
+        document.addEventListener('keypress',(e)=>{
         if(e.keyCode === 13 || e.which === 13){
             e.preventDefault() ;
             return false ;
@@ -203,6 +230,9 @@ const App = (function(ItemCtrl,UICtrl){
       }) //disable submit on enter
         document.querySelector(UISelectors.itemList).addEventListener('click',itemEditClick);
         document.querySelector(UISelectors.updateBtn).addEventListener('click',itemUpdateSubmit);
+        document.querySelector(UISelectors.backBtn).addEventListener('click',UICtrl.clearEditState);
+        document.querySelector(UISelectors.deleteBtn).addEventListener('click',itemDeleteSubmit);
+        document.querySelector(UISelectors.clearBtn).addEventListener('click',clearAllItemsClick);
     }
 
     const itemAddSubmit = function(e){
@@ -214,6 +244,24 @@ const App = (function(ItemCtrl,UICtrl){
             UICtrl.showTotalCalories(totalCalories);
             UICtrl.clearInput();
         }
+        e.preventDefault();
+    }
+
+    const clearAllItemsClick = function(){
+        ItemCtrl.clearAllItems();
+        const totalCalories = ItemCtrl.getTotalCalories();
+        UICtrl.showTotalCalories(totalCalories);
+        UICtrl.removeItems();
+        UICtrl.hideList();
+    }
+
+    const itemDeleteSubmit = function(e){
+        const currentItem = ItemCtrl.getCurrentItem();
+        ItemCtrl.deleteItem(currentItem.id);
+        UICtrl.deleteListItem(currentItem.id);
+        UICtrl.clearEditState();
+        const totalCalories = ItemCtrl.getTotalCalories();
+        UICtrl.showTotalCalories(totalCalories);
         e.preventDefault();
     }
 
