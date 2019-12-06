@@ -7,7 +7,7 @@ const StorageCtrl = (function(){
                 items.push(item);
                 localStorage.setItem('items',JSON.stringify(items));    
             }else{
-                items = JSON.parse(localStorage.getItems('items'));  
+                items = JSON.parse(localStorage.getItem('items'));  
                 items.push(item);
                  localStorage.setItem('items',JSON.stringify(items));
             }
@@ -21,11 +21,35 @@ const StorageCtrl = (function(){
                 items = JSON.parse(localStorage.getItem('items')); 
             }
             return items;
+        },
+
+        updateItem: function(updatedItem){
+            let items = JSON.parse(localStorage.getItem('items'))
+            items.forEach(function(item,index){
+                if(updatedItem.id === item.id){
+                    items.splice(index,1,updatedItem);
+                }   
+            })
+            localStorage.setItem('items',JSON.stringify(items)); 
+        },
+
+        deleteItems: function(itemId){
+            let items = JSON.parse(localStorage.getItem('items'))
+            items.forEach(function(item,index){
+                if(itemId === item.id){
+                    items.splice(index,1);
+                }   
+            })
+            localStorage.setItem('items',JSON.stringify(items)); 
+        },
+
+        clearItems: function(){
+            localStorage.removeItem('items');
         }
     }
 })();
 
-
+ 
 const ItemCtrl = (function(){
 
     const Item=function(id,name,calories){
@@ -273,6 +297,7 @@ const App = (function(ItemCtrl,UICtrl,StorageCtrl){
 
     const clearAllItemsClick = function(){
         ItemCtrl.clearAllItems();
+        StorageCtrl.clearItems();
         const totalCalories = ItemCtrl.getTotalCalories();
         UICtrl.showTotalCalories(totalCalories);
         UICtrl.removeItems();
@@ -283,6 +308,7 @@ const App = (function(ItemCtrl,UICtrl,StorageCtrl){
         const currentItem = ItemCtrl.getCurrentItem();
         ItemCtrl.deleteItem(currentItem.id);
         UICtrl.deleteListItem(currentItem.id);
+        StorageCtrl.deleteItems(currentItem.id);
         UICtrl.clearEditState();
         const totalCalories = ItemCtrl.getTotalCalories();
         UICtrl.showTotalCalories(totalCalories);
@@ -306,6 +332,7 @@ const App = (function(ItemCtrl,UICtrl,StorageCtrl){
         UICtrl.updateListItem(updatedItem);
         const totalCalories = ItemCtrl.getTotalCalories();
         UICtrl.showTotalCalories(totalCalories);
+        StorageCtrl.updateItem(updatedItem);
         UICtrl.clearEditState();
         e.preventDefault(); 
     }
