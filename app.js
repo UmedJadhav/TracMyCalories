@@ -1,3 +1,30 @@
+const StorageCtrl = (function(){
+    return {
+        storeItem: function(item){
+            let items ;
+            if(localStorage.getItem('items') === null){
+                items = [];
+                items.push(item);
+                localStorage.setItem('items',JSON.stringify(items));    
+            }else{
+                items = JSON.parse(localStorage.getItems('items'));  
+                items.push(item);
+                 localStorage.setItem('items',JSON.stringify(items));
+            }
+        } ,
+
+        getItems: function(){
+            let items = [];
+            if(localStorage.getItem('items') === null){
+                items = []; 
+            }else{
+                items = JSON.parse(localStorage.getItem('items')); 
+            }
+            return items;
+        }
+    }
+})();
+
 
 const ItemCtrl = (function(){
 
@@ -8,11 +35,7 @@ const ItemCtrl = (function(){
     }
 
     const data={
-        items:[
-               {id: 0,name: 'Steak Dinner' ,calories: 600},
-               {id: 1,name: 'CookieJar' , calories: 500},
-               {id: 2,name: 'Slampon' ,calories: 890}
-        ],
+        items: StorageCtrl.getItems(),
         currentItem: null,
         totalCalories: 0
     }
@@ -218,7 +241,7 @@ const UICtrl = (function(){
     };
 })();
 
-const App = (function(ItemCtrl,UICtrl){
+const App = (function(ItemCtrl,UICtrl,StorageCtrl){
     const loadEventListeners = function(){
         const UISelectors = UICtrl.getSelectors();
         document.querySelector(UISelectors.addBtn).addEventListener('click',itemAddSubmit);
@@ -242,6 +265,7 @@ const App = (function(ItemCtrl,UICtrl){
             UICtrl.addListItem(newItem);
             const totalCalories = ItemCtrl.getTotalCalories();
             UICtrl.showTotalCalories(totalCalories);
+            StorageCtrl.storeItem(newItem);
             UICtrl.clearInput();
         }
         e.preventDefault();
@@ -300,6 +324,6 @@ const App = (function(ItemCtrl,UICtrl){
             loadEventListeners();
         }
     };
-})(ItemCtrl,UICtrl);
+})(ItemCtrl,UICtrl,StorageCtrl);
 
 App.init();
